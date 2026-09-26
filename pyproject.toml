@@ -1,0 +1,24 @@
+[project]
+name = "devops-health-checker"
+version = "0.1.0"
+description = "A Python-based infrastructure health checker for AWS, Kubernetes, and GitHub"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3",
+    "python-dotenv",
+    "pyyaml",
+    "requests",
+]
+
+[project.scripts]
+devops-health-checker = "devops_health_checker.main:main"
+
+[build-system]
+requires = ["uv_build>=0.12.19,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
