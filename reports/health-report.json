@@ -1,0 +1,72 @@
+{
+    "timestamp": "2026-10-08T18:26:27.157526+00:00",
+    "overall_status": "HEALTHY",
+    "components": {
+        "kubernetes": {
+            "name": "kubernetes",
+            "status": "HEALTHY",
+            "details": {
+                "namespace": null,
+                "total_nodes": 1,
+                "unhealthy_nodes": 0,
+                "total_pods": 9,
+                "unhealthy_pods": 0,
+                "nodes": [
+                    {
+                        "name": "wisecow-cluster-control-plane",
+                        "ready": true
+                    }
+                ],
+                "pods": [
+                    {
+                        "name": "coredns-7d764666f9-cqp6r",
+                        "namespace": "kube-system",
+                        "phase": "Running"
+                    },
+                    {
+                        "name": "coredns-7d764666f9-ssl7h",
+                        "namespace": "kube-system",
+                        "phase": "Running"
+                    },
+                    {
+                        "name": "etcd-wisecow-cluster-control-plane",
+                        "namespace": "kube-system",
+                        "phase": "Running"
+                    },
+                    {
+                        "name": "kindnet-7c6xz",
+                        "namespace": "kube-system",
+                        "phase": "Running"
+                    },
+                    {
+                        "name": "kube-apiserver-wisecow-cluster-control-plane",
+                        "namespace": "kube-system",
+                        "phase": "Running"
+                    },
+                    {
+                        "name": "kube-controller-manager-wisecow-cluster-control-plane",
+                        "namespace": "kube-system",
+                        "phase": "Running"
+                    },
+                    {
+                        "name": "kube-proxy-zh5xl",
+                        "namespace": "kube-system",
+                        "phase": "Running"
+                    },
+                    {
+                        "name": "kube-scheduler-wisecow-cluster-control-plane",
+                        "namespace": "kube-system",
+                        "phase": "Running"
+                    },
+                    {
+                        "name": "local-path-provisioner-67b8995b4b-czfwt",
+                        "namespace": "local-path-storage",
+                        "phase": "Running"
+                    }
+                ]
+            },
+            "errors": [],
+            "duration_ms": 527.1
+        }
+    }
+}

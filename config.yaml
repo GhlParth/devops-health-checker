@@ -1,0 +1,13 @@
+aws:
+  region: ap-south-1
+
+github:
+  owner: kubernetes
+  repository: kubernetes
+
+kubernetes:
+  namespace: null
+
+llm:
+  provider: gemini
+  model: gemini-2.5-flash-lite

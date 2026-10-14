@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "boto3",
+    "kubernetes>=36.0.3",
     "python-dotenv",
     "pyyaml",
     "requests",

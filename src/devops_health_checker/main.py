@@ -1,5 +1,21 @@
 import argparse
 
+from devops_health_checker.agent import DevOpsAgent
+from devops_health_checker.config import (
+    get_github_config,
+    get_kubernetes_config,
+    load_config,
+)
+from devops_health_checker.logger import setup_logger
+from devops_health_checker.report import generate_report
+from devops_health_checker.timing import measure_time
+from devops_health_checker.tools.registry import (
+    create_tool_registry,
+)
+
+
+logger = setup_logger()
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -30,25 +46,284 @@ def parse_arguments():
         help="Run all health checks",
     )
 
+    parser.add_argument(
+        "--agent",
+        type=str,
+        help=(
+            "Ask the AI DevOps agent a "
+            "question about infrastructure"
+        ),
+    )
+
+    parser.add_argument(
+        "--list-tools",
+        action="store_true",
+        help="List available health-check tools",
+    )
+
+    parser.add_argument(
+        "--list-schemas",
+        action="store_true",
+        help="List schemas for available tools",
+    )
+
     return parser.parse_args()
+
+
+def run_github_check(
+    registry,
+    config,
+):
+    github_config = get_github_config(config)
+
+    owner = github_config.get(
+        "owner",
+        "kubernetes",
+    )
+
+    repository = github_config.get(
+        "repository",
+        "kubernetes",
+    )
+
+    result, duration_ms = measure_time(
+        registry.run,
+        "github_repository",
+        owner=owner,
+        repository=repository,
+    )
+
+    return result, duration_ms
+
+
+def run_aws_check(registry):
+    return measure_time(
+        registry.run,
+        "aws_ec2_health",
+    )
+
+
+def run_kubernetes_check(
+    registry,
+    config,
+):
+    kubernetes_config = get_kubernetes_config(
+        config
+    )
+
+    namespace = kubernetes_config.get(
+        "namespace"
+    )
+
+    return measure_time(
+        registry.run,
+        "kubernetes_health",
+        namespace=namespace,
+    )
+
+
+def run_agent(
+    registry,
+    user_message,
+):
+    logger.info(
+        "Starting AI DevOps agent"
+    )
+
+    logger.info(
+        "Agent request: %s",
+        user_message,
+    )
+
+    agent = DevOpsAgent(
+        registry=registry,
+    )
+
+    try:
+        answer = agent.run(
+            user_message
+        )
+
+    except Exception as error:
+        logger.error(
+            "AI DevOps agent failed: %s",
+            error,
+        )
+
+        print(
+            "Agent error: "
+            f"{error}"
+        )
+
+        return 1
+
+    logger.info(
+        "AI DevOps agent completed successfully"
+    )
+
+    print()
+    print(answer)
+
+    return 0
 
 
 def main():
     args = parse_arguments()
 
-    print("DevOps Infrastructure Health Checker")
+    config = load_config()
 
-    if args.github:
-        print("Running GitHub health check")
+    registry = create_tool_registry()
 
-    if args.aws:
-        print("Running AWS health check")
+    logger.info(
+        "Starting DevOps health checker"
+    )
 
-    if args.kubernetes:
-        print("Running Kubernetes health check")
+    if args.list_tools:
+        print("\nAvailable tools:\n")
+
+        for tool in registry.list_tools():
+            print(
+                f"{tool.name}: "
+                f"{tool.description}"
+            )
+
+        return 0
+
+    if args.list_schemas:
+        print("\nAvailable tool schemas:\n")
+
+        for schema in registry.list_schemas():
+            print(schema.to_dict())
+
+        return 0
+
+    # AI agent mode.
+    #
+    # This is intentionally checked before the
+    # deterministic health-check flags because
+    # --agent represents a separate execution mode.
+    if args.agent:
+        return run_agent(
+            registry,
+            args.agent,
+        )
 
     if args.all:
-        print("Running all health checks")
+        args.github = True
+        args.aws = True
+        args.kubernetes = True
+
+    components = []
+
+    if args.github:
+        logger.info(
+            "Running GitHub health check"
+        )
+
+        github_result, duration_ms = (
+            run_github_check(
+                registry,
+                config,
+            )
+        )
+
+        github_result.duration_ms = (
+            duration_ms
+        )
+
+        components.append(github_result)
+
+        logger.info(
+            "GitHub health check completed | "
+            "status=%s | duration=%.2fms",
+            github_result.status.value,
+            github_result.duration_ms,
+        )
+
+    if args.aws:
+        logger.info(
+            "Running AWS health check"
+        )
+
+        aws_result, duration_ms = (
+            run_aws_check(registry)
+        )
+
+        aws_result.duration_ms = (
+            duration_ms
+        )
+
+        components.append(aws_result)
+
+        logger.info(
+            "AWS health check completed | "
+            "status=%s | duration=%.2fms",
+            aws_result.status.value,
+            aws_result.duration_ms,
+        )
+
+    if args.kubernetes:
+        logger.info(
+            "Running Kubernetes health check"
+        )
+
+        kubernetes_result, duration_ms = (
+            run_kubernetes_check(
+                registry,
+                config,
+            )
+        )
+
+        kubernetes_result.duration_ms = (
+            duration_ms
+        )
+
+        components.append(
+            kubernetes_result
+        )
+
+        logger.info(
+            "Kubernetes health check completed | "
+            "status=%s | duration=%.2fms",
+            kubernetes_result.status.value,
+            kubernetes_result.duration_ms,
+        )
+
+    if not components:
+        logger.warning(
+            "No health check selected"
+        )
+
+        print(
+            "No health check selected."
+        )
+
+        return 0
+
+    report = generate_report(
+        components
+    )
+
+    logger.info(
+        "Overall health status: %s",
+        report["overall_status"],
+    )
+
+    logger.info(
+        "Health report generated successfully"
+    )
+
+    print(
+        f"Overall status: "
+        f"{report['overall_status']}"
+    )
+
+    print(
+        "Report generated: "
+        "reports/health-report.json"
+    )
+
+    return 0
 
 
 if __name__ == "__main__":
