@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-health-checker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devops-health-checker
+  template:
+    metadata:
+      labels:
+        app: devops-health-checker
+    spec:
+      containers:
+        - name: api
+          image: devops-health-checker:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: DEVOPS_API_HOST
+              value: "0.0.0.0"
+            - name: DEVOPS_API_PORT
+              value: "8080"
+            - name: DEVOPS_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: devops-health-checker
+                  key: api-token
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

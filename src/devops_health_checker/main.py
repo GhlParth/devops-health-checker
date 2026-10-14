@@ -1,12 +1,16 @@
 import argparse
+import json
 
 from devops_health_checker.agent import DevOpsAgent
+from devops_health_checker.api import run_api_server
 from devops_health_checker.config import (
     get_github_config,
     get_kubernetes_config,
     load_config,
 )
 from devops_health_checker.logger import setup_logger
+from devops_health_checker.mcp import MCPServer, run_stdio_server
+from devops_health_checker.multi_agent import MultiAgentCoordinator
 from devops_health_checker.report import generate_report
 from devops_health_checker.timing import measure_time
 from devops_health_checker.tools.registry import (
@@ -56,6 +60,15 @@ def parse_arguments():
     )
 
     parser.add_argument(
+        "--knowledge",
+        type=str,
+        help=(
+            "Search the local DevOps knowledge base "
+            "without using the AI agent"
+        ),
+    )
+
+    parser.add_argument(
         "--list-tools",
         action="store_true",
         help="List available health-check tools",
@@ -65,6 +78,30 @@ def parse_arguments():
         "--list-schemas",
         action="store_true",
         help="List schemas for available tools",
+    )
+
+    parser.add_argument(
+        "--mcp-server",
+        action="store_true",
+        help="Run the tools through an MCP-compatible stdio server",
+    )
+
+    parser.add_argument(
+        "--api-server",
+        action="store_true",
+        help="Run the HTTP API server",
+    )
+
+    parser.add_argument(
+        "--multi-agent",
+        type=str,
+        help="Ask routed specialist agents for an infrastructure assessment",
+    )
+
+    parser.add_argument(
+        "--aiops",
+        type=str,
+        help="Investigate a component list, for example 'kubernetes,aws'",
     )
 
     return parser.parse_args()
@@ -167,6 +204,28 @@ def run_agent(
     return 0
 
 
+def run_knowledge_search(
+    registry,
+    query,
+):
+    try:
+        result = registry.run(
+            "search_devops_knowledge",
+            query=query,
+        )
+
+    except Exception as error:
+        logger.error(
+            "Knowledge search failed: %s",
+            error,
+        )
+        print(f"Knowledge search error: {error}")
+        return 1
+
+    print(json.dumps(result, indent=2))
+    return 0
+
+
 def main():
     args = parse_arguments()
 
@@ -197,6 +256,32 @@ def main():
 
         return 0
 
+    if args.mcp_server:
+        run_stdio_server(MCPServer(registry))
+        return 0
+
+    if args.api_server:
+        run_api_server()
+        return 0
+
+    if args.multi_agent:
+        result = MultiAgentCoordinator(registry).run(args.multi_agent)
+        print(json.dumps(result.to_dict(), indent=2))
+        return 0
+
+    if args.aiops:
+        components = [
+            component.strip()
+            for component in args.aiops.split(",")
+            if component.strip()
+        ]
+        execution = registry.execute(
+            "aiops_investigate",
+            {"components": components},
+        )
+        print(json.dumps(execution.to_dict(), indent=2))
+        return 0 if execution.success else 1
+
     # AI agent mode.
     #
     # This is intentionally checked before the
@@ -206,6 +291,12 @@ def main():
         return run_agent(
             registry,
             args.agent,
+        )
+
+    if args.knowledge:
+        return run_knowledge_search(
+            registry,
+            args.knowledge,
         )
 
     if args.all:

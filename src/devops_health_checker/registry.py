@@ -13,11 +13,18 @@ class Tool:
     description: str
     function: Callable[..., Any]
     schema: ToolSchema
+    read_only: bool = True
+    requires_approval: bool = False
 
 
 class ToolRegistry:
-    def __init__(self):
+    def __init__(self, audit_log=None, metrics=None):
         self._tools: dict[str, Tool] = {}
+        from devops_health_checker.security import AuditLog
+        from devops_health_checker.observability import MetricsCollector
+
+        self.audit_log = audit_log or AuditLog()
+        self.metrics = metrics or MetricsCollector()
 
     def register(
         self,
@@ -25,6 +32,8 @@ class ToolRegistry:
         description: str,
         function: Callable[..., Any],
         schema: ToolSchema,
+        read_only: bool = True,
+        requires_approval: bool = False,
     ):
         if name in self._tools:
             raise ValueError(
@@ -36,6 +45,8 @@ class ToolRegistry:
             description=description,
             function=function,
             schema=schema,
+            read_only=read_only,
+            requires_approval=requires_approval,
         )
 
     def get(self, name: str) -> Tool:
@@ -59,6 +70,7 @@ class ToolRegistry:
         self,
         name: str,
         arguments: dict[str, Any] | None = None,
+        approved: bool = False,
     ):
         from devops_health_checker.execution import (
             ToolExecutor,
@@ -66,12 +78,41 @@ class ToolRegistry:
 
         tool = self.get(name)
 
+        from devops_health_checker.security import validate_tool_policy
+
+        try:
+            validate_tool_policy(tool, approved)
+        except PermissionError as error:
+            self.audit_log.record(
+                event="tool_denied",
+                tool_name=name,
+                success=False,
+                arguments=arguments,
+                error=str(error),
+            )
+            from devops_health_checker.execution import ToolExecutionResult
+
+            return ToolExecutionResult(
+                tool_name=name,
+                success=False,
+                error=str(error),
+            )
+
         executor = ToolExecutor()
 
-        return executor.execute(
+        execution = executor.execute(
             tool,
             arguments,
         )
+        self.audit_log.record(
+            event="tool_executed",
+            tool_name=name,
+            success=execution.success,
+            arguments=arguments,
+            error=execution.error,
+        )
+        self.metrics.record_tool(execution)
+        return execution
 
     def run(
         self,
