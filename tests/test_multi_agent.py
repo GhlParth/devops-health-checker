@@ -13,11 +13,7 @@ class MockLLM:
 
 
 def final_response(text):
-    return {
-        "choices": [{
-            "message": {"role": "assistant", "content": text}
-        }]
-    }
+    return {"choices": [{"message": {"role": "assistant", "content": text}}]}
 
 
 def test_router_selects_relevant_specialists_and_caps_count():
@@ -26,9 +22,7 @@ def test_router_selects_relevant_specialists_and_caps_count():
         max_specialists=2,
     )
 
-    selected = coordinator.select_specialists(
-        "Kubernetes pod security incident in AWS"
-    )
+    selected = coordinator.select_specialists("Kubernetes pod security incident in AWS")
 
     assert len(selected) == 2
     assert "kubernetes" in selected
@@ -38,18 +32,18 @@ def test_router_selects_relevant_specialists_and_caps_count():
 def test_router_uses_sre_fallback():
     coordinator = MultiAgentCoordinator(ToolRegistry())
 
-    assert coordinator.select_specialists("What should we investigate?") == [
-        "sre"
-    ]
+    assert coordinator.select_specialists("What should we investigate?") == ["sre"]
 
 
 def test_multi_agent_aggregates_specialist_responses():
     coordinator = MultiAgentCoordinator(
         ToolRegistry(),
-        llm_client=MockLLM([
-            final_response("Kubernetes evidence."),
-            final_response("AWS evidence."),
-        ]),
+        llm_client=MockLLM(
+            [
+                final_response("Kubernetes evidence."),
+                final_response("AWS evidence."),
+            ]
+        ),
         max_specialists=2,
     )
 

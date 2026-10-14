@@ -16,13 +16,15 @@ class MockLLM:
 
 def _tool_call_response(tool_calls):
     return {
-        "choices": [{
-            "message": {
-                "role": "assistant",
-                "content": None,
-                "tool_calls": tool_calls,
+        "choices": [
+            {
+                "message": {
+                    "role": "assistant",
+                    "content": None,
+                    "tool_calls": tool_calls,
+                }
             }
-        }]
+        ]
     }
 
 
@@ -63,41 +65,47 @@ def test_agent_combines_live_health_and_knowledge_results() -> None:
         ),
     )
 
-    llm = MockLLM([
-        _tool_call_response([
+    llm = MockLLM(
+        [
+            _tool_call_response(
+                [
+                    {
+                        "type": "function",
+                        "id": "health-call",
+                        "function": {
+                            "name": "kubernetes_health",
+                            "arguments": "{}",
+                        },
+                    }
+                ]
+            ),
+            _tool_call_response(
+                [
+                    {
+                        "type": "function",
+                        "id": "knowledge-call",
+                        "function": {
+                            "name": "search_devops_knowledge",
+                            "arguments": '{"query":"unhealthy pod"}',
+                        },
+                    }
+                ]
+            ),
             {
-                "type": "function",
-                "id": "health-call",
-                "function": {
-                    "name": "kubernetes_health",
-                    "arguments": "{}",
-                },
-            }
-        ]),
-        _tool_call_response([
-            {
-                "type": "function",
-                "id": "knowledge-call",
-                "function": {
-                    "name": "search_devops_knowledge",
-                    "arguments": '{"query":"unhealthy pod"}',
-                },
-            }
-        ]),
-        {
-            "choices": [{
-                "message": {
-                    "role": "assistant",
-                    "content": "See kubernetes/pods.md for guidance.",
-                }
-            }]
-        },
-    ])
-
-    answer = DevOpsAgent(registry, llm_client=llm).run(
-        "Diagnose my unhealthy Kubernetes pod."
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": "See kubernetes/pods.md for guidance.",
+                        }
+                    }
+                ]
+            },
+        ]
     )
+
+    answer = DevOpsAgent(registry, llm_client=llm).run("Diagnose my unhealthy Kubernetes pod.")
 
     assert answer == "See kubernetes/pods.md for guidance."
     assert len(llm.calls) == 3
-    assert 'kubernetes/pods.md' in llm.calls[2][-1]["content"]
+    assert "kubernetes/pods.md" in llm.calls[2][-1]["content"]

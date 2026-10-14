@@ -16,31 +16,37 @@ class MockLLM:
 
 def tool_call_response():
     return {
-        "choices": [{
-            "message": {
-                "role": "assistant",
-                "content": None,
-                "tool_calls": [{
-                    "type": "function",
-                    "id": "workflow-call",
-                    "function": {
-                        "name": "health",
-                        "arguments": "{}",
-                    },
-                }],
+        "choices": [
+            {
+                "message": {
+                    "role": "assistant",
+                    "content": None,
+                    "tool_calls": [
+                        {
+                            "type": "function",
+                            "id": "workflow-call",
+                            "function": {
+                                "name": "health",
+                                "arguments": "{}",
+                            },
+                        }
+                    ],
+                }
             }
-        }]
+        ]
     }
 
 
 def final_response():
     return {
-        "choices": [{
-            "message": {
-                "role": "assistant",
-                "content": "Workflow completed.",
+        "choices": [
+            {
+                "message": {
+                    "role": "assistant",
+                    "content": "Workflow completed.",
+                }
             }
-        }]
+        ]
     }
 
 

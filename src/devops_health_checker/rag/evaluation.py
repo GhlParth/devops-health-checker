@@ -51,11 +51,7 @@ def evaluate_retrieval(
 
     query_count = len(cases)
     precision = relevant_results / (query_count * top_k)
-    recall = (
-        relevant_results / expected_source_count
-        if expected_source_count
-        else 0.0
-    )
+    recall = relevant_results / expected_source_count if expected_source_count else 0.0
 
     return {
         "queries": query_count,
@@ -75,14 +71,8 @@ def evaluate_agent(agent, cases: Sequence[AgentEvaluationCase]) -> dict[str, Any
     for case in cases:
         answer = agent.run(case.prompt)
         normalized_answer = answer.lower()
-        phrases_match = all(
-            phrase.lower() in normalized_answer
-            for phrase in case.expected_phrases
-        )
-        sources_match = all(
-            source.lower() in normalized_answer
-            for source in case.expected_sources
-        )
+        phrases_match = all(phrase.lower() in normalized_answer for phrase in case.expected_phrases)
+        sources_match = all(source.lower() in normalized_answer for source in case.expected_sources)
         case_passed = phrases_match and sources_match
         passed += int(case_passed)
         details.append({"prompt": case.prompt, "passed": case_passed})

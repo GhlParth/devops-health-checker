@@ -1,0 +1,136 @@
+name: CI
+
+"on":
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  # ─── Lint ──────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (ruff + mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dev dependencies
+        run: uv sync --frozen
+
+      - name: Run ruff (linter)
+        run: uv run ruff check src tests
+
+      - name: Run ruff (formatter check)
+        run: uv run ruff format --check src tests
+
+      - name: Run mypy (type checker)
+        run: uv run mypy src
+
+  # ─── Security ──────────────────────────────────────────────────────────────
+  security:
+    name: Security scan (bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dev dependencies
+        run: uv sync --frozen
+
+      - name: Run bandit (SAST)
+        run: uv run bandit -c pyproject.toml -r src
+
+  # ─── Test ──────────────────────────────────────────────────────────────────
+  test:
+    name: Tests (pytest + coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install all dependencies
+        run: uv sync --frozen
+
+      - name: Run tests with coverage
+        env:
+          OPENROUTER_API_KEY: "test-key"
+          GITHUB_TOKEN: "test-token"
+          AWS_DEFAULT_REGION: "us-east-1"
+          LOG_FORMAT: "text"
+        run: |
+          uv run pytest \
+            --cov=src/devops_health_checker \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-fail-under=70 \
+            -v
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage.xml
+          flags: unittests
+        continue-on-error: true
+
+  # ─── Manifest validation ───────────────────────────────────────────────────
+  k8s-validate:
+    name: Validate K8s manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -sLo /tmp/kubeconform.tar.gz \
+            https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz
+          tar xf /tmp/kubeconform.tar.gz -C /usr/local/bin
+
+      - name: Validate Kubernetes manifests
+        run: |
+          kubeconform -strict -summary \
+            deploy/kubernetes/*.yaml || true
+
+  # ─── Docker build (PR preview) ─────────────────────────────────────────────
+  docker-build:
+    name: Docker build check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: devops-health-checker:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

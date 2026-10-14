@@ -1,4 +1,5 @@
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 def create_aiops_investigator(registry) -> Callable[..., dict[str, Any]]:
@@ -33,7 +34,7 @@ def create_aiops_investigator(registry) -> Callable[..., dict[str, Any]]:
                 incidents.append(
                     {
                         "component": component,
-                        "severity": "unknown",
+                        "severity": "critical",
                         "type": "provider_failure",
                         "evidence": execution.get("error"),
                     }

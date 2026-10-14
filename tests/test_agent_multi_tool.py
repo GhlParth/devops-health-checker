@@ -10,15 +10,15 @@ class MockLLM:
         self.calls = []
 
     def chat(self, messages, tools=None):
-        self.calls.append({
-            "messages": messages,
-            "tools": tools,
-        })
+        self.calls.append(
+            {
+                "messages": messages,
+                "tools": tools,
+            }
+        )
 
         if not self.responses:
-            raise AssertionError(
-                "MockLLM has no more responses."
-            )
+            raise AssertionError("MockLLM has no more responses.")
 
         return self.responses.pop(0)
 
@@ -35,10 +35,12 @@ class MockRegistry:
         name,
         arguments=None,
     ):
-        self.executed.append({
-            "name": name,
-            "arguments": arguments,
-        })
+        self.executed.append(
+            {
+                "name": name,
+                "arguments": arguments,
+            }
+        )
 
         results = {
             "kubernetes_health": {
@@ -84,10 +86,12 @@ class PartialFailureRegistry(MockRegistry):
         name,
         arguments=None,
     ):
-        self.executed.append({
-            "name": name,
-            "arguments": arguments,
-        })
+        self.executed.append(
+            {
+                "name": name,
+                "arguments": arguments,
+            }
+        )
 
         if name == "aws_ec2_health":
             return ToolExecutionResult(
@@ -125,71 +129,58 @@ def make_tool_call(
 def test_agent_executes_multiple_tools():
     registry = MockRegistry()
 
-    llm = MockLLM([
-        {
-            "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": None,
-                        "tool_calls": [
-                            make_tool_call(
-                                "call-k8s",
-                                "kubernetes_health",
-                            ),
-                            make_tool_call(
-                                "call-github",
-                                "github_repository",
-                                (
-                                    '{"owner":"kubernetes",'
-                                    '"repository":"kubernetes"}'
+    llm = MockLLM(
+        [
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [
+                                make_tool_call(
+                                    "call-k8s",
+                                    "kubernetes_health",
                                 ),
+                                make_tool_call(
+                                    "call-github",
+                                    "github_repository",
+                                    ('{"owner":"kubernetes","repository":"kubernetes"}'),
+                                ),
+                            ],
+                        }
+                    }
+                ]
+            },
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": (
+                                "Kubernetes is healthy and the GitHub repository is available."
                             ),
-                        ],
+                        }
                     }
-                }
-            ]
-        },
-        {
-            "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": (
-                            "Kubernetes is healthy and "
-                            "the GitHub repository is "
-                            "available."
-                        ),
-                    }
-                }
-            ]
-        },
-    ])
+                ]
+            },
+        ]
+    )
 
     agent = DevOpsAgent(
         registry=registry,
         llm_client=llm,
     )
 
-    answer = agent.run(
-        "Check Kubernetes and GitHub."
-    )
+    answer = agent.run("Check Kubernetes and GitHub.")
 
-    assert (
-        answer
-        == "Kubernetes is healthy and "
-        "the GitHub repository is available."
-    )
+    assert answer == "Kubernetes is healthy and the GitHub repository is available."
 
     assert len(registry.executed) == 2
 
-    assert registry.executed[0]["name"] == (
-        "kubernetes_health"
-    )
+    assert registry.executed[0]["name"] == ("kubernetes_health")
 
-    assert registry.executed[1]["name"] == (
-        "github_repository"
-    )
+    assert registry.executed[1]["name"] == ("github_repository")
 
     assert registry.executed[1]["arguments"] == {
         "owner": "kubernetes",
@@ -200,70 +191,58 @@ def test_agent_executes_multiple_tools():
 def test_agent_executes_three_tools():
     registry = MockRegistry()
 
-    llm = MockLLM([
-        {
-            "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": None,
-                        "tool_calls": [
-                            make_tool_call(
-                                "call-k8s",
-                                "kubernetes_health",
-                            ),
-                            make_tool_call(
-                                "call-github",
-                                "github_repository",
-                                (
-                                    '{"owner":"kubernetes",'
-                                    '"repository":"kubernetes"}'
+    llm = MockLLM(
+        [
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [
+                                make_tool_call(
+                                    "call-k8s",
+                                    "kubernetes_health",
                                 ),
-                            ),
-                            make_tool_call(
-                                "call-aws",
-                                "aws_ec2_health",
-                            ),
-                        ],
+                                make_tool_call(
+                                    "call-github",
+                                    "github_repository",
+                                    ('{"owner":"kubernetes","repository":"kubernetes"}'),
+                                ),
+                                make_tool_call(
+                                    "call-aws",
+                                    "aws_ec2_health",
+                                ),
+                            ],
+                        }
                     }
-                }
-            ]
-        },
-        {
-            "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": (
-                            "Kubernetes, GitHub, and "
-                            "AWS checks completed."
-                        ),
+                ]
+            },
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": ("Kubernetes, GitHub, and AWS checks completed."),
+                        }
                     }
-                }
-            ]
-        },
-    ])
+                ]
+            },
+        ]
+    )
 
     agent = DevOpsAgent(
         registry=registry,
         llm_client=llm,
     )
 
-    answer = agent.run(
-        "Check Kubernetes, GitHub, and AWS."
-    )
+    answer = agent.run("Check Kubernetes, GitHub, and AWS.")
 
-    assert answer == (
-        "Kubernetes, GitHub, and AWS "
-        "checks completed."
-    )
+    assert answer == ("Kubernetes, GitHub, and AWS checks completed.")
 
     assert len(registry.executed) == 3
 
-    executed_tools = [
-        item["name"]
-        for item in registry.executed
-    ]
+    executed_tools = [item["name"] for item in registry.executed]
 
     assert executed_tools == [
         "kubernetes_health",
@@ -275,157 +254,128 @@ def test_agent_executes_three_tools():
 def test_agent_sends_all_tool_results_back_to_llm():
     registry = MockRegistry()
 
-    llm = MockLLM([
-        {
-            "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": None,
-                        "tool_calls": [
-                            make_tool_call(
-                                "call-k8s",
-                                "kubernetes_health",
-                            ),
-                            make_tool_call(
-                                "call-github",
-                                "github_repository",
-                                (
-                                    '{"owner":"kubernetes",'
-                                    '"repository":"kubernetes"}'
+    llm = MockLLM(
+        [
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [
+                                make_tool_call(
+                                    "call-k8s",
+                                    "kubernetes_health",
                                 ),
-                            ),
-                        ],
+                                make_tool_call(
+                                    "call-github",
+                                    "github_repository",
+                                    ('{"owner":"kubernetes","repository":"kubernetes"}'),
+                                ),
+                            ],
+                        }
                     }
-                }
-            ]
-        },
-        {
-            "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": (
-                            "Both infrastructure and "
-                            "repository checks completed."
-                        ),
+                ]
+            },
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": ("Both infrastructure and repository checks completed."),
+                        }
                     }
-                }
-            ]
-        },
-    ])
+                ]
+            },
+        ]
+    )
 
     agent = DevOpsAgent(
         registry=registry,
         llm_client=llm,
     )
 
-    agent.run(
-        "Check Kubernetes and GitHub."
-    )
+    agent.run("Check Kubernetes and GitHub.")
 
     assert len(llm.calls) == 2
 
-    second_messages = (
-        llm.calls[1]["messages"]
-    )
+    second_messages = llm.calls[1]["messages"]
 
-    tool_messages = [
-        message
-        for message in second_messages
-        if message.get("role") == "tool"
-    ]
+    tool_messages = [message for message in second_messages if message.get("role") == "tool"]
 
     assert len(tool_messages) == 2
 
-    tool_call_ids = [
-        message["tool_call_id"]
-        for message in tool_messages
-    ]
+    tool_call_ids = [message["tool_call_id"] for message in tool_messages]
 
     assert tool_call_ids == [
         "call-k8s",
         "call-github",
     ]
 
-    assert "kubernetes_health" in (
-        tool_messages[0]["content"]
-    )
+    assert "kubernetes_health" in (tool_messages[0]["content"])
 
-    assert "github_repository" in (
-        tool_messages[1]["content"]
-    )
+    assert "github_repository" in (tool_messages[1]["content"])
 
 
 def test_agent_handles_one_failed_tool():
     registry = PartialFailureRegistry()
 
-    llm = MockLLM([
-        {
-            "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": None,
-                        "tool_calls": [
-                            make_tool_call(
-                                "call-k8s",
-                                "kubernetes_health",
-                            ),
-                            make_tool_call(
-                                "call-aws",
-                                "aws_ec2_health",
-                            ),
-                        ],
+    llm = MockLLM(
+        [
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [
+                                make_tool_call(
+                                    "call-k8s",
+                                    "kubernetes_health",
+                                ),
+                                make_tool_call(
+                                    "call-aws",
+                                    "aws_ec2_health",
+                                ),
+                            ],
+                        }
                     }
-                }
-            ]
-        },
-        {
-            "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": (
-                            "Kubernetes is healthy, "
-                            "but AWS could not be checked "
-                            "because credentials are invalid."
-                        ),
+                ]
+            },
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": (
+                                "Kubernetes is healthy, "
+                                "but AWS could not be checked "
+                                "because credentials are invalid."
+                            ),
+                        }
                     }
-                }
-            ]
-        },
-    ])
+                ]
+            },
+        ]
+    )
 
     agent = DevOpsAgent(
         registry=registry,
         llm_client=llm,
     )
 
-    answer = agent.run(
-        "Check Kubernetes and AWS."
-    )
+    answer = agent.run("Check Kubernetes and AWS.")
 
     assert answer == (
-        "Kubernetes is healthy, "
-        "but AWS could not be checked "
-        "because credentials are invalid."
+        "Kubernetes is healthy, but AWS could not be checked because credentials are invalid."
     )
 
     assert len(registry.executed) == 2
 
-    second_messages = (
-        llm.calls[1]["messages"]
-    )
+    second_messages = llm.calls[1]["messages"]
 
-    tool_messages = [
-        message
-        for message in second_messages
-        if message.get("role") == "tool"
-    ]
+    tool_messages = [message for message in second_messages if message.get("role") == "tool"]
 
     assert len(tool_messages) == 2
 
-    assert "AWS credentials are invalid." in (
-        tool_messages[1]["content"]
-    )
+    assert "AWS credentials are invalid." in (tool_messages[1]["content"])

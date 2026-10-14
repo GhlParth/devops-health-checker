@@ -14,12 +14,8 @@ class HealthStatus(str, Enum):
 class HealthResult:
     name: str
     status: HealthStatus
-    details: dict[str, Any] = field(
-        default_factory=dict
-    )
-    errors: list[str] = field(
-        default_factory=list
-    )
+    details: dict[str, Any] = field(default_factory=dict)
+    errors: list[str] = field(default_factory=list)
     duration_ms: float = 0.0
 
     def to_dict(self):

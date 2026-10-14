@@ -15,9 +15,7 @@ class ToolParameter:
 class ToolSchema:
     name: str
     description: str
-    parameters: list[ToolParameter] = field(
-        default_factory=list
-    )
+    parameters: list[ToolParameter] = field(default_factory=list)
 
     def to_dict(self):
         return {

@@ -5,9 +5,7 @@ from devops_health_checker.observability import MetricsCollector
 def test_metrics_collect_tool_and_llm_usage() -> None:
     metrics = MetricsCollector()
     metrics.record_tool(ToolExecutionResult("health", True, duration_ms=12.5))
-    metrics.record_tool(
-        ToolExecutionResult("health", False, error="failed", duration_ms=2.5)
-    )
+    metrics.record_tool(ToolExecutionResult("health", False, error="failed", duration_ms=2.5))
     metrics.record_llm(
         {
             "usage": {

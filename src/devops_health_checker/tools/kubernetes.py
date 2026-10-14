@@ -22,14 +22,9 @@ def get_nodes():
     for node in response.items:
         ready = False
 
-        for condition in (
-            node.status.conditions or []
-        ):
+        for condition in node.status.conditions or []:
             if condition.type == "Ready":
-                ready = (
-                    condition.status
-                    == "True"
-                )
+                ready = condition.status == "True"
 
         nodes.append(
             {
@@ -47,16 +42,10 @@ def get_pods(namespace=None):
     v1 = client.CoreV1Api()
 
     if namespace:
-        response = (
-            v1.list_namespaced_pod(
-                namespace=namespace
-            )
-        )
+        response = v1.list_namespaced_pod(namespace=namespace)
 
     else:
-        response = (
-            v1.list_pod_for_all_namespaces()
-        )
+        response = v1.list_pod_for_all_namespaces()
 
     pods = []
 
@@ -64,9 +53,7 @@ def get_pods(namespace=None):
         pods.append(
             {
                 "name": pod.metadata.name,
-                "namespace": (
-                    pod.metadata.namespace
-                ),
+                "namespace": (pod.metadata.namespace),
                 "phase": pod.status.phase,
             }
         )
@@ -80,28 +67,17 @@ def check_kubernetes_health(
     try:
         nodes = get_nodes()
 
-        pods = get_pods(
-            namespace
-        )
+        pods = get_pods(namespace)
 
     except Exception as error:
         return HealthResult(
             name="kubernetes",
             status=HealthStatus.CRITICAL,
             details={},
-            errors=[
-                (
-                    "Kubernetes health check "
-                    f"failed: {error}"
-                )
-            ],
+            errors=[(f"Kubernetes health check failed: {error}")],
         )
 
-    unhealthy_nodes = [
-        node
-        for node in nodes
-        if not node["ready"]
-    ]
+    unhealthy_nodes = [node for node in nodes if not node["ready"]]
 
     unhealthy_pods = [
         pod
@@ -128,13 +104,9 @@ def check_kubernetes_health(
         details={
             "namespace": namespace,
             "total_nodes": len(nodes),
-            "unhealthy_nodes": len(
-                unhealthy_nodes
-            ),
+            "unhealthy_nodes": len(unhealthy_nodes),
             "total_pods": len(pods),
-            "unhealthy_pods": len(
-                unhealthy_pods
-            ),
+            "unhealthy_pods": len(unhealthy_pods),
             "nodes": nodes,
             "pods": pods,
         },

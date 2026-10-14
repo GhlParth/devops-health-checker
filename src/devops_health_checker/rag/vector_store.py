@@ -50,15 +50,11 @@ class TfidfVectorStore:
 
         results: list[SearchResult] = []
         for chunk, vector in zip(self._chunks, self._vectors):
-            score = _dot_product(query_vector, vector) / (
-                query_norm * _vector_norm(vector)
-            )
+            score = _dot_product(query_vector, vector) / (query_norm * _vector_norm(vector))
             if score == 0:
                 continue
 
-            matched_terms = tuple(
-                term for term in query_terms if term in vector
-            )
+            matched_terms = tuple(term for term in query_terms if term in vector)
             results.append(SearchResult(chunk, score, matched_terms))
 
         results.sort(
@@ -82,9 +78,7 @@ class TfidfVectorStore:
             term: math.log((1 + document_count) / (1 + frequency)) + 1
             for term, frequency in document_frequency.items()
         }
-        self._vectors = [
-            self._weighted_vector(Counter(terms)) for terms in document_terms
-        ]
+        self._vectors = [self._weighted_vector(Counter(terms)) for terms in document_terms]
 
     def _weighted_vector(self, term_counts: Counter[str]) -> dict[str, float]:
         return {
@@ -92,6 +86,8 @@ class TfidfVectorStore:
             for term, count in term_counts.items()
             if term in self._idf
         }
+
+
 def _vector_norm(vector: dict[str, float]) -> float:
     return math.sqrt(sum(value * value for value in vector.values()))
 

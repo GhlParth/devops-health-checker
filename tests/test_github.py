@@ -5,16 +5,13 @@ import requests
 from devops_health_checker.models import (
     HealthStatus,
 )
-
 from devops_health_checker.tools.github import (
     check_github_health,
     get_repository,
 )
 
 
-@patch(
-    "devops_health_checker.tools.github.requests.get"
-)
+@patch("devops_health_checker.tools.github.requests.get")
 def test_get_repository_success(mock_get):
     mock_response = Mock()
 
@@ -34,21 +31,14 @@ def test_get_repository_success(mock_get):
 
     assert result["success"] is True
 
-    assert (
-        result["data"]["full_name"]
-        == "kubernetes/kubernetes"
-    )
+    assert result["data"]["full_name"] == "kubernetes/kubernetes"
 
     mock_get.assert_called_once()
 
 
-@patch(
-    "devops_health_checker.tools.github.requests.get"
-)
+@patch("devops_health_checker.tools.github.requests.get")
 def test_get_repository_timeout(mock_get):
-    mock_get.side_effect = (
-        requests.exceptions.Timeout()
-    )
+    mock_get.side_effect = requests.exceptions.Timeout()
 
     result = get_repository(
         "kubernetes",
@@ -58,23 +48,14 @@ def test_get_repository_timeout(mock_get):
     assert result["success"] is False
     assert result["data"] is None
 
-    assert (
-        "timed out"
-        in result["error"]
-    )
+    assert "timed out" in result["error"]
 
 
-@patch(
-    "devops_health_checker.tools.github.requests.get"
-)
+@patch("devops_health_checker.tools.github.requests.get")
 def test_get_repository_http_error(mock_get):
     mock_response = Mock()
 
-    mock_response.raise_for_status.side_effect = (
-        requests.exceptions.HTTPError(
-            "404 Client Error"
-        )
-    )
+    mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError("404 Client Error")
 
     mock_get.return_value = mock_response
 
@@ -86,24 +67,16 @@ def test_get_repository_http_error(mock_get):
     assert result["success"] is False
     assert result["data"] is None
 
-    assert (
-        "HTTP error"
-        in result["error"]
-    )
+    assert "HTTP error" in result["error"]
 
 
-@patch(
-    "devops_health_checker.tools.github.get_repository"
-)
+@patch("devops_health_checker.tools.github.get_repository")
 def test_check_github_health(mock_repository):
     mock_repository.return_value = {
         "success": True,
         "data": {
             "full_name": "kubernetes/kubernetes",
-            "description": (
-                "Production-grade "
-                "container orchestration"
-            ),
+            "description": ("Production-grade container orchestration"),
             "stargazers_count": 100000,
             "forks_count": 40000,
             "open_issues_count": 100,
@@ -118,35 +91,18 @@ def test_check_github_health(mock_repository):
 
     assert result.name == "github"
 
-    assert (
-        result.status
-        == HealthStatus.HEALTHY
-    )
+    assert result.status == HealthStatus.HEALTHY
 
-    assert (
-        result.details["repository"]
-        == "kubernetes/kubernetes"
-    )
+    assert result.details["repository"] == "kubernetes/kubernetes"
 
-    assert (
-        result.details["stars"]
-        == 100000
-    )
+    assert result.details["stars"] == 100000
 
-    assert (
-        result.details["forks"]
-        == 40000
-    )
+    assert result.details["forks"] == 40000
 
-    assert (
-        result.details["open_issues"]
-        == 100
-    )
+    assert result.details["open_issues"] == 100
 
 
-@patch(
-    "devops_health_checker.tools.github.get_repository"
-)
+@patch("devops_health_checker.tools.github.get_repository")
 def test_check_github_health_failure(
     mock_repository,
 ):
@@ -163,12 +119,6 @@ def test_check_github_health_failure(
 
     assert result.name == "github"
 
-    assert (
-        result.status
-        == HealthStatus.CRITICAL
-    )
+    assert result.status == HealthStatus.CRITICAL
 
-    assert (
-        "GitHub API unavailable"
-        in result.errors[0]
-    )
+    assert "GitHub API unavailable" in result.errors[0]

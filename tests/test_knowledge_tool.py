@@ -1,9 +1,9 @@
 import pytest
 
+from devops_health_checker.tools import knowledge
 from devops_health_checker.tools.knowledge import (
     search_devops_knowledge,
 )
-from devops_health_checker.tools import knowledge
 from devops_health_checker.tools.registry import (
     create_tool_registry,
 )
@@ -14,9 +14,7 @@ def test_search_devops_knowledge_returns_source_metadata() -> None:
 
     assert result["query"] == "pod crash loop"
     assert result["match_count"] > 0
-    assert result["results"][0]["source"] == (
-        "kubernetes/pod-troubleshooting.md"
-    )
+    assert result["results"][0]["source"] == ("kubernetes/pod-troubleshooting.md")
     assert result["results"][0]["category"] == "kubernetes"
 
 

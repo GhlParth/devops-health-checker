@@ -7,7 +7,6 @@ from devops_health_checker.llm import OpenRouterClient
 from devops_health_checker.llm_tools import registry_to_openrouter_tools
 from devops_health_checker.observability import MetricsCollector
 
-
 SYSTEM_PROMPT = """
 You are a DevOps infrastructure assistant.
 
@@ -121,9 +120,7 @@ class DevOpsWorkflow:
 
             state.route = "error"
             self.last_state = state
-            raise RuntimeError(
-                "Agent reached the maximum number of iterations."
-            )
+            raise RuntimeError("Agent reached the maximum number of iterations.")
         except Exception as error:
             state.status = "failed"
             state.route = "error"
@@ -148,20 +145,14 @@ class DevOpsWorkflow:
             (time.perf_counter() - start) * 1000,
         )
         if "error" in response:
-            raise RuntimeError(
-                "LLM returned an error: "
-                f"{response['error']}"
-            )
+            raise RuntimeError(f"LLM returned an error: {response['error']}")
         return response
 
     @staticmethod
     def _validate_response(response: dict[str, Any]) -> dict[str, Any]:
         choices = response.get("choices")
         if not choices:
-            raise RuntimeError(
-                "LLM response did not contain 'choices'. Response: "
-                f"{response}"
-            )
+            raise RuntimeError(f"LLM response did not contain 'choices'. Response: {response}")
 
         message = choices[0].get("message")
         if not isinstance(message, dict):

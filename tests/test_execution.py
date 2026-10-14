@@ -1,16 +1,13 @@
 from devops_health_checker.execution import (
     ToolExecutor,
 )
-
 from devops_health_checker.models import (
     HealthResult,
     HealthStatus,
 )
-
 from devops_health_checker.registry import (
     Tool,
 )
-
 from devops_health_checker.schemas import (
     ToolParameter,
     ToolSchema,
@@ -58,9 +55,7 @@ def test_successful_tool_execution():
 
 
 def test_invalid_arguments_are_not_executed():
-    execution_count = {
-        "count": 0
-    }
+    execution_count = {"count": 0}
 
     def test_function(value):
         execution_count["count"] += 1
@@ -103,9 +98,7 @@ def test_invalid_arguments_are_not_executed():
 
 def test_tool_execution_error_is_captured():
     def failing_function():
-        raise RuntimeError(
-            "Something went wrong"
-        )
+        raise RuntimeError("Something went wrong")
 
     schema = ToolSchema(
         name="failing_tool",
@@ -128,9 +121,7 @@ def test_tool_execution_error_is_captured():
 
     assert result.success is False
     assert result.result is None
-    assert result.error == (
-        "Something went wrong"
-    )
+    assert result.error == ("Something went wrong")
     assert result.duration_ms >= 0
 
 
@@ -138,9 +129,7 @@ def test_health_result_is_preserved():
     health_result = HealthResult(
         name="test",
         status=HealthStatus.HEALTHY,
-        details={
-            "message": "Everything is healthy"
-        },
+        details={"message": "Everything is healthy"},
     )
 
     def health_function():
@@ -167,18 +156,14 @@ def test_health_result_is_preserved():
 
     assert result.success is True
     assert result.result is health_result
-    assert result.result.status == (
-        HealthStatus.HEALTHY
-    )
+    assert result.result.status == (HealthStatus.HEALTHY)
 
 
 def test_execution_result_to_dict():
     health_result = HealthResult(
         name="test",
         status=HealthStatus.WARNING,
-        details={
-            "message": "Something needs attention"
-        },
+        details={"message": "Something needs attention"},
         errors=[],
     )
 

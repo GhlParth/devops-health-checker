@@ -22,9 +22,7 @@ def test_run_knowledge_search_prints_json(capsys) -> None:
     exit_code = run_knowledge_search(registry, "pod logs")
 
     assert exit_code == 0
-    assert registry.calls == [
-        ("search_devops_knowledge", {"query": "pod logs"})
-    ]
+    assert registry.calls == [("search_devops_knowledge", {"query": "pod logs"})]
     assert json.loads(capsys.readouterr().out)["match_count"] == 1
 
 

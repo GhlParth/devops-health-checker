@@ -1,6 +1,5 @@
 import re
 
-
 TERM_ALIASES: dict[str, tuple[str, ...]] = {
     "crashloopbackoff": ("crash", "loop", "backoff"),
     "oomkilled": ("oom", "killed"),

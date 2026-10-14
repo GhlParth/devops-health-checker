@@ -4,7 +4,6 @@ from devops_health_checker.schemas import (
     ToolParameter,
     ToolSchema,
 )
-
 from devops_health_checker.validation import (
     ToolValidationError,
     validate_tool_arguments,

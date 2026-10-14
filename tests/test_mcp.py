@@ -34,9 +34,7 @@ def test_mcp_lists_registered_tools() -> None:
     )
 
     assert response["result"]["tools"][0]["name"] == "echo"
-    assert response["result"]["tools"][0]["inputSchema"]["required"] == [
-        "message"
-    ]
+    assert response["result"]["tools"][0]["inputSchema"]["required"] == ["message"]
 
 
 def test_mcp_client_calls_validated_tool() -> None:
@@ -69,10 +67,7 @@ def test_mcp_returns_validation_error_without_executing_tool() -> None:
 def test_mcp_stdio_round_trip() -> None:
     server = MCPServer(create_registry())
     input_stream = io.StringIO(
-        json.dumps(
-            {"jsonrpc": "2.0", "id": 1, "method": "tools/list"}
-        )
-        + "\n"
+        json.dumps({"jsonrpc": "2.0", "id": 1, "method": "tools/list"}) + "\n"
     )
     output_stream = io.StringIO()
 

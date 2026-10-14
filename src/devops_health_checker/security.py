@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -27,7 +27,7 @@ class AuditLog:
     ) -> None:
         self.events.append(
             AuditEvent(
-                timestamp=datetime.now(timezone.utc).isoformat(),
+                timestamp=datetime.now(UTC).isoformat(),
                 event=event,
                 tool_name=tool_name,
                 success=success,

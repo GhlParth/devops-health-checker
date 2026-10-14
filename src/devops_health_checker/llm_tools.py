@@ -15,9 +15,7 @@ def schema_to_openrouter_tool(
         }
 
         if parameter.default is not None:
-            properties[
-                parameter.name
-            ]["default"] = parameter.default
+            properties[parameter.name]["default"] = parameter.default
 
         if parameter.required:
             required.append(parameter.name)
@@ -39,7 +37,4 @@ def schema_to_openrouter_tool(
 def registry_to_openrouter_tools(
     registry,
 ) -> list[dict]:
-    return [
-        schema_to_openrouter_tool(tool.schema)
-        for tool in registry.list_tools()
-    ]
+    return [schema_to_openrouter_tool(tool.schema) for tool in registry.list_tools()]

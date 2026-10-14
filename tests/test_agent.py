@@ -17,15 +17,15 @@ class MockLLM:
         self.calls = []
 
     def chat(self, messages, tools=None):
-        self.calls.append({
-            "messages": messages,
-            "tools": tools,
-        })
+        self.calls.append(
+            {
+                "messages": messages,
+                "tools": tools,
+            }
+        )
 
         if not self.responses:
-            raise AssertionError(
-                "MockLLM has no remaining responses."
-            )
+            raise AssertionError("MockLLM has no remaining responses.")
 
         return self.responses.pop(0)
 
@@ -51,15 +51,11 @@ def create_mock_registry():
 
     registry.register(
         name="kubernetes_health",
-        description=(
-            "Check Kubernetes health."
-        ),
+        description=("Check Kubernetes health."),
         function=mock_kubernetes_health,
         schema=ToolSchema(
             name="kubernetes_health",
-            description=(
-                "Check Kubernetes health."
-            ),
+            description=("Check Kubernetes health."),
         ),
     )
 
@@ -80,9 +76,7 @@ def test_agent_executes_tool_and_returns_final_answer():
                             "type": "function",
                             "id": "call-123",
                             "function": {
-                                "name": (
-                                    "kubernetes_health"
-                                ),
+                                "name": ("kubernetes_health"),
                                 "arguments": "{}",
                             },
                         }
@@ -97,32 +91,27 @@ def test_agent_executes_tool_and_returns_final_answer():
             {
                 "message": {
                     "role": "assistant",
-                    "content": (
-                        "The Kubernetes cluster "
-                        "is healthy."
-                    ),
+                    "content": ("The Kubernetes cluster is healthy."),
                 }
             }
         ]
     }
 
-    llm = MockLLM([
-        tool_call_response,
-        final_response,
-    ])
+    llm = MockLLM(
+        [
+            tool_call_response,
+            final_response,
+        ]
+    )
 
     agent = DevOpsAgent(
         registry=registry,
         llm_client=llm,
     )
 
-    answer = agent.run(
-        "Check Kubernetes health."
-    )
+    answer = agent.run("Check Kubernetes health.")
 
-    assert answer == (
-        "The Kubernetes cluster is healthy."
-    )
+    assert answer == ("The Kubernetes cluster is healthy.")
 
     assert len(llm.calls) == 2
 
@@ -141,9 +130,7 @@ def test_agent_sends_tool_result_back_to_llm():
                             "type": "function",
                             "id": "call-456",
                             "function": {
-                                "name": (
-                                    "kubernetes_health"
-                                ),
+                                "name": ("kubernetes_health"),
                                 "arguments": "{}",
                             },
                         }
@@ -164,47 +151,35 @@ def test_agent_sends_tool_result_back_to_llm():
         ]
     }
 
-    llm = MockLLM([
-        tool_call_response,
-        final_response,
-    ])
+    llm = MockLLM(
+        [
+            tool_call_response,
+            final_response,
+        ]
+    )
 
     agent = DevOpsAgent(
         registry=registry,
         llm_client=llm,
     )
 
-    agent.run(
-        "Check Kubernetes."
-    )
+    agent.run("Check Kubernetes.")
 
     second_call = llm.calls[1]
 
-    tool_messages = [
-        message
-        for message in second_call["messages"]
-        if message["role"] == "tool"
-    ]
+    tool_messages = [message for message in second_call["messages"] if message["role"] == "tool"]
 
     assert len(tool_messages) == 1
 
     tool_message = tool_messages[0]
 
-    assert tool_message["tool_call_id"] == (
-        "call-456"
-    )
+    assert tool_message["tool_call_id"] == ("call-456")
 
-    result = json.loads(
-        tool_message["content"]
-    )
+    result = json.loads(tool_message["content"])
 
     assert result["success"] is True
-    assert result["result"]["name"] == (
-        "kubernetes"
-    )
-    assert result["result"]["status"] == (
-        "HEALTHY"
-    )
+    assert result["result"]["name"] == ("kubernetes")
+    assert result["result"]["status"] == ("HEALTHY")
 
 
 def test_agent_handles_invalid_tool_arguments():
@@ -221,12 +196,8 @@ def test_agent_handles_invalid_tool_arguments():
                             "type": "function",
                             "id": "call-invalid",
                             "function": {
-                                "name": (
-                                    "kubernetes_health"
-                                ),
-                                "arguments": (
-                                    '{"unknown": "value"}'
-                                ),
+                                "name": ("kubernetes_health"),
+                                "arguments": ('{"unknown": "value"}'),
                             },
                         }
                     ],
@@ -240,47 +211,35 @@ def test_agent_handles_invalid_tool_arguments():
             {
                 "message": {
                     "role": "assistant",
-                    "content": (
-                        "The requested check "
-                        "could not be executed."
-                    ),
+                    "content": ("The requested check could not be executed."),
                 }
             }
         ]
     }
 
-    llm = MockLLM([
-        tool_call_response,
-        final_response,
-    ])
+    llm = MockLLM(
+        [
+            tool_call_response,
+            final_response,
+        ]
+    )
 
     agent = DevOpsAgent(
         registry=registry,
         llm_client=llm,
     )
 
-    answer = agent.run(
-        "Check Kubernetes."
-    )
+    answer = agent.run("Check Kubernetes.")
 
-    assert answer == (
-        "The requested check could not "
-        "be executed."
-    )
+    assert answer == ("The requested check could not be executed.")
 
     second_call = llm.calls[1]
 
-    tool_messages = [
-        message
-        for message in second_call["messages"]
-        if message["role"] == "tool"
-    ]
+    tool_messages = [message for message in second_call["messages"] if message["role"] == "tool"]
 
     assert len(tool_messages) == 1
 
-    result = json.loads(
-        tool_messages[0]["content"]
-    )
+    result = json.loads(tool_messages[0]["content"])
 
     assert result["success"] is False
     assert "Unknown parameter" in result["error"]
@@ -300,12 +259,8 @@ def test_agent_handles_invalid_json_arguments():
                             "type": "function",
                             "id": "call-json",
                             "function": {
-                                "name": (
-                                    "kubernetes_health"
-                                ),
-                                "arguments": (
-                                    '{"namespace":'
-                                ),
+                                "name": ("kubernetes_health"),
+                                "arguments": ('{"namespace":'),
                             },
                         }
                     ],
@@ -319,49 +274,36 @@ def test_agent_handles_invalid_json_arguments():
             {
                 "message": {
                     "role": "assistant",
-                    "content": (
-                        "The tool request was "
-                        "invalid."
-                    ),
+                    "content": ("The tool request was invalid."),
                 }
             }
         ]
     }
 
-    llm = MockLLM([
-        tool_call_response,
-        final_response,
-    ])
+    llm = MockLLM(
+        [
+            tool_call_response,
+            final_response,
+        ]
+    )
 
     agent = DevOpsAgent(
         registry=registry,
         llm_client=llm,
     )
 
-    answer = agent.run(
-        "Check Kubernetes."
-    )
+    answer = agent.run("Check Kubernetes.")
 
-    assert answer == (
-        "The tool request was invalid."
-    )
+    assert answer == ("The tool request was invalid.")
 
     second_call = llm.calls[1]
 
-    tool_messages = [
-        message
-        for message in second_call["messages"]
-        if message["role"] == "tool"
-    ]
+    tool_messages = [message for message in second_call["messages"] if message["role"] == "tool"]
 
-    result = json.loads(
-        tool_messages[0]["content"]
-    )
+    result = json.loads(tool_messages[0]["content"])
 
     assert result["success"] is False
-    assert "Invalid JSON arguments" in (
-        result["error"]
-    )
+    assert "Invalid JSON arguments" in (result["error"])
 
 
 def test_agent_returns_direct_llm_answer():
@@ -372,10 +314,7 @@ def test_agent_returns_direct_llm_answer():
             {
                 "message": {
                     "role": "assistant",
-                    "content": (
-                        "I can help with "
-                        "DevOps health checks."
-                    ),
+                    "content": ("I can help with DevOps health checks."),
                 }
             }
         ]
@@ -388,13 +327,9 @@ def test_agent_returns_direct_llm_answer():
         llm_client=llm,
     )
 
-    answer = agent.run(
-        "What can you do?"
-    )
+    answer = agent.run("What can you do?")
 
-    assert answer == (
-        "I can help with DevOps health checks."
-    )
+    assert answer == ("I can help with DevOps health checks.")
 
     assert len(llm.calls) == 1
 
@@ -416,17 +351,11 @@ def test_agent_rejects_llm_error_response():
     )
 
     try:
-        agent.run(
-            "Check Kubernetes."
-        )
-        assert False, (
-            "Expected RuntimeError"
-        )
+        agent.run("Check Kubernetes.")
+        assert False, "Expected RuntimeError"
 
     except RuntimeError as error:
-        assert "LLM returned an error" in (
-            str(error)
-        )
+        assert "LLM returned an error" in (str(error))
 
 
 def test_agent_enforces_max_iterations():
@@ -443,9 +372,7 @@ def test_agent_enforces_max_iterations():
                             "type": "function",
                             "id": "call-loop",
                             "function": {
-                                "name": (
-                                    "kubernetes_health"
-                                ),
+                                "name": ("kubernetes_health"),
                                 "arguments": "{}",
                             },
                         }
@@ -455,11 +382,13 @@ def test_agent_enforces_max_iterations():
         ]
     }
 
-    llm = MockLLM([
-        tool_call_response,
-        tool_call_response,
-        tool_call_response,
-    ])
+    llm = MockLLM(
+        [
+            tool_call_response,
+            tool_call_response,
+            tool_call_response,
+        ]
+    )
 
     agent = DevOpsAgent(
         registry=registry,
@@ -468,16 +397,10 @@ def test_agent_enforces_max_iterations():
     )
 
     try:
-        agent.run(
-            "Keep checking Kubernetes."
-        )
-        assert False, (
-            "Expected maximum iteration error"
-        )
+        agent.run("Keep checking Kubernetes.")
+        assert False, "Expected maximum iteration error"
 
     except RuntimeError as error:
-        assert "maximum number" in (
-            str(error)
-        ).lower()
+        assert "maximum number" in (str(error)).lower()
 
     assert len(llm.calls) == 2

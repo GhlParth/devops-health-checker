@@ -3,7 +3,6 @@ import sys
 from collections.abc import Callable, Iterator
 from typing import Any, TextIO
 
-
 MCP_PROTOCOL_VERSION = "2024-11-05"
 
 

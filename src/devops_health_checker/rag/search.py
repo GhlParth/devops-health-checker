@@ -8,7 +8,7 @@ from devops_health_checker.rag.text import tokenize
 @dataclass(frozen=True)
 class SearchResult:
     chunk: DocumentChunk
-    score: int
+    score: float
     matched_terms: tuple[str, ...]
 
 
@@ -29,9 +29,7 @@ def search_chunks(
     for chunk in chunks:
         content_terms = tokenize(chunk.content)
         term_counts = {term: content_terms.count(term) for term in query_terms}
-        matched_terms = tuple(
-            term for term in query_terms if term_counts[term] > 0
-        )
+        matched_terms = tuple(term for term in query_terms if term_counts[term] > 0)
 
         if not matched_terms:
             continue

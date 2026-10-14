@@ -9,5 +9,23 @@ wheels/
 # Virtual environments
 .venv
 
-# Local secrets
+# Local secrets — NEVER commit .env
 .env
+.env.*
+!.env.example
+
+# Reports (generated at runtime)
+reports/
+
+# Test/coverage artifacts
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+# Type-checker cache
+.mypy_cache/
+.ruff_cache/
+
+# OS
+.DS_Store

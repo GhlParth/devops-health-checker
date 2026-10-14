@@ -3,7 +3,6 @@ import pytest
 from devops_health_checker.registry import (
     ToolRegistry,
 )
-
 from devops_health_checker.schemas import (
     ToolParameter,
     ToolSchema,
@@ -143,9 +142,7 @@ def test_run_tool():
 def test_invalid_arguments_do_not_execute_tool():
     registry = ToolRegistry()
 
-    execution_count = {
-        "count": 0
-    }
+    execution_count = {"count": 0}
 
     def dangerous_function(owner):
         execution_count["count"] += 1

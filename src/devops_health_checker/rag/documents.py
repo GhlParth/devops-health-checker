@@ -20,20 +20,14 @@ def load_documents(
     documents = []
 
     for path in sorted(root.rglob("*.md")):
-        content = path.read_text(
-            encoding="utf-8"
-        ).strip()
+        content = path.read_text(encoding="utf-8").strip()
 
         if not content:
             continue
 
         relative_path = path.relative_to(root)
 
-        category = (
-            relative_path.parts[0]
-            if len(relative_path.parts) > 1
-            else "general"
-        )
+        category = relative_path.parts[0] if len(relative_path.parts) > 1 else "general"
 
         documents.append(
             Document(

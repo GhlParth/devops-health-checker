@@ -65,4 +65,3 @@ def test_unknown_without_critical_or_warning():
     result = calculate_overall_status(components)
 
     assert result == HealthStatus.UNKNOWN
-    

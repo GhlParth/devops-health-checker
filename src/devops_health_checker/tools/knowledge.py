@@ -4,7 +4,6 @@ from typing import Any
 from devops_health_checker.rag.documents import load_documents
 from devops_health_checker.rag.vector_store import TfidfVectorStore
 
-
 KNOWLEDGE_DIR = Path(__file__).resolve().parents[3] / "knowledge"
 _cached_signature: tuple[tuple[str, int, int], ...] | None = None
 _cached_store: TfidfVectorStore | None = None

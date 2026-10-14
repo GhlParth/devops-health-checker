@@ -30,9 +30,7 @@ def test_vector_store_can_be_built_from_documents() -> None:
 
 
 def test_vector_store_returns_empty_for_unknown_terms() -> None:
-    store = TfidfVectorStore(
-        [DocumentChunk("Kubernetes pod", "pods.md", "kubernetes", 0)]
-    )
+    store = TfidfVectorStore([DocumentChunk("Kubernetes pod", "pods.md", "kubernetes", 0)])
 
     assert store.search("database") == []
     assert store.search("") == []

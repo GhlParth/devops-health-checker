@@ -1,30 +1,25 @@
+from devops_health_checker.aiops import create_aiops_investigator
 from devops_health_checker.registry import (
     ToolRegistry,
 )
-
 from devops_health_checker.schemas import (
     ToolParameter,
     ToolSchema,
 )
-
 from devops_health_checker.tools.aws import (
     check_ec2_health,
 )
-
 from devops_health_checker.tools.github import (
     check_github_health,
 )
-
-from devops_health_checker.tools.kubernetes import (
-    check_kubernetes_health,
+from devops_health_checker.tools.integration import (
+    create_agentic_review_tool,
 )
-
 from devops_health_checker.tools.knowledge import (
     search_devops_knowledge,
 )
-from devops_health_checker.aiops import create_aiops_investigator
-from devops_health_checker.tools.integration import (
-    create_agentic_review_tool,
+from devops_health_checker.tools.kubernetes import (
+    check_kubernetes_health,
 )
 
 
@@ -33,34 +28,23 @@ def create_tool_registry():
 
     aws_schema = ToolSchema(
         name="aws_ec2_health",
-        description=(
-            "Check the health and state of "
-            "AWS EC2 instances."
-        ),
+        description=("Check the health and state of AWS EC2 instances."),
     )
 
     github_schema = ToolSchema(
         name="github_repository",
-        description=(
-            "Check the health and information "
-            "of a GitHub repository."
-        ),
+        description=("Check the health and information of a GitHub repository."),
         parameters=[
             ToolParameter(
                 name="owner",
                 type="string",
-                description=(
-                    "GitHub repository owner "
-                    "or organization."
-                ),
+                description=("GitHub repository owner or organization."),
                 required=True,
             ),
             ToolParameter(
                 name="repository",
                 type="string",
-                description=(
-                    "GitHub repository name."
-                ),
+                description=("GitHub repository name."),
                 required=True,
             ),
         ],
@@ -68,18 +52,13 @@ def create_tool_registry():
 
     kubernetes_schema = ToolSchema(
         name="kubernetes_health",
-        description=(
-            "Check Kubernetes nodes and pods "
-            "for health issues."
-        ),
+        description=("Check Kubernetes nodes and pods for health issues."),
         parameters=[
             ToolParameter(
                 name="namespace",
                 type="string",
                 description=(
-                    "Kubernetes namespace to "
-                    "inspect. If omitted, "
-                    "all namespaces are checked."
+                    "Kubernetes namespace to inspect. If omitted, all namespaces are checked."
                 ),
                 required=False,
                 default=None,
@@ -97,19 +76,13 @@ def create_tool_registry():
             ToolParameter(
                 name="query",
                 type="string",
-                description=(
-                    "The DevOps or infrastructure question "
-                    "to search for."
-                ),
+                description=("The DevOps or infrastructure question to search for."),
                 required=True,
             ),
             ToolParameter(
                 name="top_k",
                 type="integer",
-                description=(
-                    "Maximum number of relevant knowledge "
-                    "chunks to return."
-                ),
+                description=("Maximum number of relevant knowledge chunks to return."),
                 required=False,
                 default=5,
             ),
@@ -154,9 +127,7 @@ def create_tool_registry():
             ToolParameter(
                 name="components",
                 type="array",
-                description=(
-                    "Components to inspect: aws, kubernetes, or github."
-                ),
+                description=("Components to inspect: aws, kubernetes, or github."),
                 required=True,
             ),
             ToolParameter(

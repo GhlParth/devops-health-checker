@@ -1,6 +1,5 @@
 from devops_health_checker.workflow import (
     DevOpsWorkflow,
-    SYSTEM_PROMPT,
 )
 
 

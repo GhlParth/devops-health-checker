@@ -1,5 +1,4 @@
 from devops_health_checker.execution import ToolExecutionResult
-from devops_health_checker.registry import ToolRegistry
 from devops_health_checker.schemas import ToolSchema
 from devops_health_checker.tools.integration import (
     create_agentic_review_tool,

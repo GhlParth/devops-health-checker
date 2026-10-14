@@ -28,10 +28,7 @@ def test_tool_schema_without_parameters():
     data = schema.to_dict()
 
     assert data["name"] == "aws_ec2_health"
-    assert (
-        data["description"]
-        == "Check AWS EC2 health"
-    )
+    assert data["description"] == "Check AWS EC2 health"
     assert data["parameters"] == []
 
 
@@ -60,4 +57,3 @@ def test_tool_schema_with_parameters():
     assert parameter["name"] == "namespace"
     assert parameter["type"] == "string"
     assert parameter["required"] is False
-    

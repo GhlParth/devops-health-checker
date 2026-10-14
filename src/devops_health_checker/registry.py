@@ -20,8 +20,8 @@ class Tool:
 class ToolRegistry:
     def __init__(self, audit_log=None, metrics=None):
         self._tools: dict[str, Tool] = {}
-        from devops_health_checker.security import AuditLog
         from devops_health_checker.observability import MetricsCollector
+        from devops_health_checker.security import AuditLog
 
         self.audit_log = audit_log or AuditLog()
         self.metrics = metrics or MetricsCollector()
@@ -36,9 +36,7 @@ class ToolRegistry:
         requires_approval: bool = False,
     ):
         if name in self._tools:
-            raise ValueError(
-                f"Tool already registered: {name}"
-            )
+            raise ValueError(f"Tool already registered: {name}")
 
         self._tools[name] = Tool(
             name=name,
@@ -51,9 +49,7 @@ class ToolRegistry:
 
     def get(self, name: str) -> Tool:
         if name not in self._tools:
-            raise KeyError(
-                f"Tool not found: {name}"
-            )
+            raise KeyError(f"Tool not found: {name}")
 
         return self._tools[name]
 
@@ -61,10 +57,7 @@ class ToolRegistry:
         return list(self._tools.values())
 
     def list_schemas(self) -> list[ToolSchema]:
-        return [
-            tool.schema
-            for tool in self._tools.values()
-        ]
+        return [tool.schema for tool in self._tools.values()]
 
     def execute(
         self,
@@ -139,12 +132,8 @@ class ToolRegistry:
             )
 
             if execution.error:
-                raise ToolValidationError(
-                    execution.error
-                )
+                raise ToolValidationError(execution.error)
 
-            raise RuntimeError(
-                f"Tool execution failed: {name}"
-            )
+            raise RuntimeError(f"Tool execution failed: {name}")
 
         return execution.result

@@ -1,5 +1,5 @@
-from typing import Any, Callable
-
+from collections.abc import Callable
+from typing import Any
 
 SUPPORTED_COMPONENTS = {
     "aws": "aws_ec2_health",
@@ -24,14 +24,9 @@ def create_agentic_review_tool(registry) -> Callable[..., dict[str, Any]]:
         if top_k <= 0:
             raise ValueError("top_k must be greater than zero")
 
-        unknown_components = sorted(
-            set(components) - set(SUPPORTED_COMPONENTS)
-        )
+        unknown_components = sorted(set(components) - set(SUPPORTED_COMPONENTS))
         if unknown_components:
-            raise ValueError(
-                "Unsupported component(s): "
-                + ", ".join(unknown_components)
-            )
+            raise ValueError("Unsupported component(s): " + ", ".join(unknown_components))
 
         health_results: dict[str, Any] = {}
         guidance: list[dict[str, Any]] = []
@@ -81,9 +76,7 @@ def _component_arguments(
         return {"namespace": namespace}
     if component == "github":
         if not owner or not repository:
-            raise ValueError(
-                "owner and repository are required for github"
-            )
+            raise ValueError("owner and repository are required for github")
         return {"owner": owner, "repository": repository}
     return {}
 

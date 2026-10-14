@@ -66,11 +66,9 @@ class ToolExecutor:
         # -------------------------------------------------
 
         try:
-            validated_arguments = (
-                validate_tool_arguments(
-                    tool.schema,
-                    arguments,
-                )
+            validated_arguments = validate_tool_arguments(
+                tool.schema,
+                arguments,
             )
 
         except Exception as error:
@@ -89,14 +87,10 @@ class ToolExecutor:
         start = time.perf_counter()
 
         try:
-            result = tool.function(
-                **validated_arguments
-            )
+            result = tool.function(**validated_arguments)
 
         except Exception as error:
-            duration_ms = (
-                time.perf_counter() - start
-            ) * 1000
+            duration_ms = (time.perf_counter() - start) * 1000
 
             return ToolExecutionResult(
                 tool_name=tool.name,
@@ -106,9 +100,7 @@ class ToolExecutor:
                 duration_ms=duration_ms,
             )
 
-        duration_ms = (
-            time.perf_counter() - start
-        ) * 1000
+        duration_ms = (time.perf_counter() - start) * 1000
 
         return ToolExecutionResult(
             tool_name=tool.name,

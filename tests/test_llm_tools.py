@@ -20,17 +20,11 @@ def test_schema_to_openrouter_tool_without_parameters():
 
     function = result["function"]
 
-    assert function["name"] == (
-        "aws_ec2_health"
-    )
+    assert function["name"] == ("aws_ec2_health")
 
-    assert function["description"] == (
-        "Check AWS EC2 health."
-    )
+    assert function["description"] == ("Check AWS EC2 health.")
 
-    assert function["parameters"]["type"] == (
-        "object"
-    )
+    assert function["parameters"]["type"] == ("object")
 
     assert function["parameters"]["properties"] == {}
 
@@ -61,25 +55,15 @@ def test_schema_to_openrouter_tool_with_parameters():
 
     function = result["function"]
 
-    properties = (
-        function["parameters"]["properties"]
-    )
+    properties = function["parameters"]["properties"]
 
-    assert properties["owner"]["type"] == (
-        "string"
-    )
+    assert properties["owner"]["type"] == ("string")
 
-    assert properties["owner"]["description"] == (
-        "Repository owner."
-    )
+    assert properties["owner"]["description"] == ("Repository owner.")
 
-    assert properties["repository"]["type"] == (
-        "string"
-    )
+    assert properties["repository"]["type"] == ("string")
 
-    assert properties["repository"]["description"] == (
-        "Repository name."
-    )
+    assert properties["repository"]["description"] == ("Repository name.")
 
     assert function["parameters"]["required"] == [
         "owner",
@@ -106,17 +90,11 @@ def test_schema_to_openrouter_tool_with_optional_default():
 
     function = result["function"]
 
-    properties = (
-        function["parameters"]["properties"]
-    )
+    properties = function["parameters"]["properties"]
 
-    assert properties["namespace"]["type"] == (
-        "string"
-    )
+    assert properties["namespace"]["type"] == ("string")
 
-    assert "default" not in properties[
-        "namespace"
-    ]
+    assert "default" not in properties["namespace"]
 
     assert function["parameters"]["required"] == []
 
@@ -138,11 +116,7 @@ def test_schema_to_openrouter_tool_preserves_default():
 
     result = schema_to_openrouter_tool(schema)
 
-    parameter = (
-        result["function"]["parameters"][
-            "properties"
-        ]["environment"]
-    )
+    parameter = result["function"]["parameters"]["properties"]["environment"]
 
     assert parameter["default"] == "production"
 
@@ -169,18 +143,12 @@ def test_registry_to_openrouter_tools():
                 ),
             ]
 
-    result = registry_to_openrouter_tools(
-        MockRegistry()
-    )
+    result = registry_to_openrouter_tools(MockRegistry())
 
     assert len(result) == 2
 
     assert result[0]["type"] == "function"
-    assert result[0]["function"]["name"] == (
-        "tool_one"
-    )
+    assert result[0]["function"]["name"] == ("tool_one")
 
     assert result[1]["type"] == "function"
-    assert result[1]["function"]["name"] == (
-        "tool_two"
-    )
+    assert result[1]["function"]["name"] == ("tool_two")

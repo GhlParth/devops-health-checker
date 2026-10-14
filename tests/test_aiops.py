@@ -46,9 +46,7 @@ def test_aiops_triages_anomaly_and_only_proposes_actions():
 
 
 def test_aiops_ignores_healthy_components():
-    registry = MockRegistry(
-        {"name": "aws", "status": "HEALTHY", "details": {}, "errors": []}
-    )
+    registry = MockRegistry({"name": "aws", "status": "HEALTHY", "details": {}, "errors": []})
 
     result = create_aiops_investigator(registry)(["aws"])
 

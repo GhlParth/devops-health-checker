@@ -3,7 +3,6 @@ from typing import Any
 
 from devops_health_checker.agent import DevOpsAgent
 
-
 SPECIALIST_KEYWORDS: dict[str, tuple[str, ...]] = {
     "kubernetes": (
         "kubernetes",
@@ -82,10 +81,7 @@ class MultiAgentCoordinator:
 
         normalized_message = message.lower()
         scores = {
-            specialist: sum(
-                keyword in normalized_message
-                for keyword in keywords
-            )
+            specialist: sum(keyword in normalized_message for keyword in keywords)
             for specialist, keywords in SPECIALIST_KEYWORDS.items()
         }
         selected = [
