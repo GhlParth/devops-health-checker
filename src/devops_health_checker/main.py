@@ -126,7 +126,7 @@ def run_checks_parallel(registry, config, run_github: bool, run_aws: bool, run_k
 
 
 def run_agent(registry, llm_client, user_message):
-    logger.info("Starting AI DevOps agent", extra={"message": user_message[:100]})
+    logger.info("Starting AI DevOps agent", extra={"user_message": user_message[:100]})
     agent = DevOpsAgent(registry=registry, llm_client=llm_client)
 
     try:

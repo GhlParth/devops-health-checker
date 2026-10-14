@@ -6,9 +6,8 @@ runbooks and troubleshooting documents.
 
 ## Complete project documentation
 
-See [docs/PROJECT_GUIDE.md](docs/PROJECT_GUIDE.md) for the complete explanation
-of the architecture, data flows, commands, API, deployment, security model,
-testing, roadmap, production-readiness gaps, and recommended next steps.
+- See [docs/MASTER_PROJECT_DOCUMENTATION.md](docs/MASTER_PROJECT_DOCUMENTATION.md) for the master architectural, conceptual, and production operations manual.
+- See [docs/PROJECT_GUIDE.md](docs/PROJECT_GUIDE.md) for the deep technical component breakdown, testing metrics, and roadmap.
 
 ## RAG data flow
 

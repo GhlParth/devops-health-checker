@@ -29,3 +29,6 @@ htmlcov/
 
 # OS
 .DS_Store
+
+# Private study & interview guide (never pushed to git)
+INTERVIEW_PREP_AND_DEEP_DIVE.md
